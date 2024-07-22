@@ -89,13 +89,47 @@
         if (sMessage.length < 1) {
             return false;
         }
+        var sMessageBox =
+            '<div class="rounded-lg w-3/4 px-2 py-1">\n' +
+            '    <span></span>\n' +
+            '</div>';
 
         var oBarend = $.post(
             "ajax.php",
             {
                 "input": sMessage,
+            },
+            "json"
+        ).always(
+            function (data)
+            {
+                // This code handles the failures as well as the successful calls.
+
+                if (typeof(data.data) == "undefined" || Object.keys(data.errors).length > 0) {
+                    // This failed. Either completely, or after parsing chatGPT's response.
+                    alert("Error sending message, please try again later.");
+                    $("#conversationButton").prop("disabled", false).find("svg").addClass("hidden");
+
+                    // If the textarea is now empty, put the message back.
+                    if ($("#conversationInput").val() == "") {
+                        $("#conversationInput").val(sMessage);
+                        $("main").children().last().remove();
+                        $("#conversationButton").prop("disabled", false).find("svg").addClass("hidden");
+                    }
+                    return false;
+                }
+
+                return false;
             }
         );
+
+        // When this didn't fail, we can put the message on the screen.
+        if (oBarend.state() != "rejected") {
+            var myMessage = $.parseHTML(sMessageBox);
+            $(myMessage).addClass("bg-green-200 self-end").find("span").text(sMessage);
+            $("main").append(myMessage);
+            $("#conversationInput").val("");
+        }
 
         return false;
     }
