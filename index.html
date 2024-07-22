@@ -47,5 +47,59 @@
     </footer>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+
+<SCRIPT type="text/javascript">
+    // Disable the Send button when there is nothing to submit.
+    $("#conversationInput").keyup(
+        function (e)
+        {
+            if ($(this).val().trim() == '') {
+                $("#conversationButton").prop('disabled', true);
+            } else if (e.which == 13) {
+                $('#conversationButton').click();
+            } else {
+                $("#conversationButton").prop('disabled', false);
+            }
+        }
+    ).keyup();
+
+    // Set the click handler for the Send button.
+    // Disable the button when clicked, to indicate that the process is loading.
+    $("#conversationButton").click(
+        function ()
+        {
+            // Disable the button and show it's busy.
+            $(this).prop('disabled', true).find("svg").removeClass("hidden");
+            // Disable download button, in case it's shown.
+            $("#" + this.id.replace('Button', '') + "DownloadButton").prop('disabled', true);
+            $(this).parents("form").submit();
+            return false; // Don't submit the form the HTML way.
+        }
+    );
+
+
+
+    function sendMessage ()
+    {
+        // This function sends the data over to the ajax script, puts the message on the screen,
+        //  and displays the response when it comes in.
+
+        var sMessage = $("#conversationInput").val();
+        if (sMessage.length < 1) {
+            return false;
+        }
+
+        var oBarend = $.post(
+            "ajax.php",
+            {
+                "input": sMessage,
+            }
+        );
+
+        return false;
+    }
+</SCRIPT>
+
 </body>
 </html>
