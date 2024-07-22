@@ -119,6 +119,46 @@
                     return false;
                 }
 
+                // If we get here, the JSON was already parsed, and we know it was successful.
+                // We should have received a reply from the chatGPT handler.
+                if (!data.data.length) {
+                    data.data[0] = "<i>(Barend somehow didn't respond, and just stares at you without saying a word - perhaps he's broken?)</i>";
+                }
+
+                // Loop through the messages.
+                $.each(
+                    data.data,
+                    function (iMessage, sMessage)
+                    {
+                        // All messages will be rendered through setTimeout, so I can time everything.
+                        // This way, it will seem that he takes a while to generate the answers.
+
+                        setTimeout(
+                            function ()
+                            {
+                                // Create a new message, make it blue, add the text, add the time, append.
+                                var myMessage = $.parseHTML(sMessageBox);
+
+                                // NOTE: This uses html() rather than text(), and is thus NOT SAFE.
+                                // We use this, so we can apply formatting. Any output that's not trusted should have been escaped by PHP.
+                                $(myMessage).addClass("bg-blue-100").find("span").html(sMessage);
+                                $("main").append(myMessage);
+                            },
+                            (2000 * iMessage)
+                        );
+                    }
+                );
+
+                // Clean up, but only when the last reply has been received.
+                setTimeout(
+                    function ()
+                    {
+                        // Reset the submit button. Still disabled (there's no message), but without the loader.
+                        $("#conversationButton").prop("disabled", true).find("svg").addClass("hidden");
+                    },
+                    (2000 * (data.data.length - 1))
+                );
+
                 return false;
             }
         );
