@@ -13,5 +13,11 @@ if (empty($_POST['input'])) {
 
 sleep(2);
 
+if ($_POST['input'] == '#intro') {
+    $a['data'][] = "This is Barend speaking. Barend Botje. Ask me anything!";
+    $a['data'][] = "I love talking to you about all things FAIR. I'm always positive. In fact, I'm overly positive! The world is at our feet.";
+    $a['data'][] = "Just ask me anything, and I'll tell you all about it.";
+}
+
 die(json_encode($a));
 ?>

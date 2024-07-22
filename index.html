@@ -87,12 +87,13 @@
 
 
 
-    function sendMessage ()
+    function sendMessage (sMessage)
     {
         // This function sends the data over to the ajax script, puts the message on the screen,
         //  and displays the response when it comes in.
-
-        var sMessage = $("#conversationInput").val();
+        if (!sMessage) {
+            var sMessage = $("#conversationInput").val();
+        }
         if (sMessage.length < 1) {
             return false;
         }
@@ -175,10 +176,13 @@
 
         // When this didn't fail, we can put the message on the screen.
         if (oBarend.state() != "rejected") {
-            var myMessage = $.parseHTML(sMessageBox);
-            $(myMessage).addClass("bg-green-200 self-end").find("span").text(sMessage);
-            $("main").append(myMessage);
-            $("#conversationInput").val("");
+            if ($("#conversationInput").val()) {
+                // This if() makes sure that we can call sendMessage("message") without showing the user what we sent.
+                var myMessage = $.parseHTML(sMessageBox);
+                $(myMessage).addClass("bg-green-200 self-end").find("span").text(sMessage);
+                $("main").append(myMessage);
+                $("#conversationInput").val("");
+            }
 
             // Display that Barend is responding, if this is necessary.
             setTimeout(
@@ -193,6 +197,13 @@
         }
 
         return false;
+    }
+
+
+
+    $()
+    {
+        sendMessage("#intro");
     }
 </SCRIPT>
 
