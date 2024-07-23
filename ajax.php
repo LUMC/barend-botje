@@ -30,7 +30,13 @@ if (count(array_intersect_key($_CONFIG, array_flip(['api_key', 'model', 'assista
 }
 
 if (empty($_POST['input'])) {
-    die(json_encode(array_merge($a, ['errors' => ['ENODATA' => 'No data was received.']])));
+    if (!empty($_GET['input'])) {
+        $_POST['input'] = $_GET['input'];
+    } else {
+        die(json_encode(array_merge($a, ['errors' => ['ENODATA' => "I can't hear you very well. Could you speak up?"]])));
+    }
+} else {
+    $_POST['input'] = trim($_POST['input']);
 }
 
 
