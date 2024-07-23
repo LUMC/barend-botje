@@ -113,8 +113,10 @@
             function (data)
             {
                 // This code handles the failures as well as the successful calls.
-
-                if (typeof(data.data) == "undefined" || Object.keys(data.errors).length > 0) {
+                if (typeof(data.data) == "undefined") {
+                    data = {errors: {'ENOJSON': "I don't understand what's happening; I expected to have something to say, but I can't find it."}}
+                }
+                if (Object.keys(data.errors).length > 0) {
                     // This failed. Either completely, or after parsing chatGPT's response.
                     alert("Error sending message, please try again later.");
                     $("#barendTyping").addClass("hidden");
@@ -126,6 +128,18 @@
                         $("main").children().last().remove();
                         $("#conversationButton").prop("disabled", false).find("svg").addClass("hidden");
                     }
+
+                    // Create a new message, make it red, add the text, add the time, append.
+                    var myMessage = $.parseHTML(sMessageBox);
+                    sErrorCode = Object.keys(data.errors)[0];
+                    sErrorMessage = data.errors[sErrorCode];
+
+                    oNow = new Date();
+                    // NOTE: This uses html() rather than text(), and is thus NOT SAFE.
+                    // We use this, so we can apply formatting. Any output that's not trusted should have been escaped by PHP.
+                    $(myMessage).addClass("bg-red-100").find("span").html('(' + sErrorCode + ') ' + sErrorMessage).next("div").text(oNow.getHours() + ":" + oNow.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2}));
+                    $("main").append(myMessage);
+
                     return false;
                 }
 
