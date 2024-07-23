@@ -134,7 +134,7 @@
                     sErrorCode = Object.keys(data.errors)[0];
                     sErrorMessage = data.errors[sErrorCode];
 
-                    oNow = new Date();
+                    oNow = new Date(); // This is an error, so use now().
                     // NOTE: This uses html() rather than text(), and is thus NOT SAFE.
                     // We use this, so we can apply formatting. Any output that's not trusted should have been escaped by PHP.
                     $(myMessage).addClass("bg-red-100").find("span").html('(' + sErrorCode + ') ' + sErrorMessage).next("div").text(oNow.getHours() + ":" + oNow.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2}));
@@ -146,13 +146,16 @@
                 // If we get here, the JSON was already parsed, and we know it was successful.
                 // We should have received a reply from the chatGPT handler.
                 if (!data.data.length) {
-                    data.data[0] = "<i>(Barend somehow didn't respond, and just stares at you without saying a word - perhaps he's broken?)</i>";
+                    data.data[0] = {
+                        'role': 'assistant',
+                        'content': "<i>(Barend somehow didn't respond, and just stares at you without saying a word - perhaps he's broken?)</i>"
+                    };
                 }
 
                 // Loop through the messages.
                 $.each(
                     data.data,
-                    function (iMessage, sMessage)
+                    function (iMessage, oMessage)
                     {
                         // All messages will be rendered through setTimeout, so I can time everything.
                         // This way, it will seem that he takes a while to generate the answers.
@@ -162,11 +165,19 @@
                             {
                                 // Create a new message, make it blue, add the text, add the time, append.
                                 var myMessage = $.parseHTML(sMessageBox);
+                                if (oMessage.role == 'assistant') {
+                                    $(myMessage).addClass("bg-blue-100");
+                                } else if (oMessage.role == 'user') {
+                                    $(myMessage).addClass("bg-green-200 self-end");
+                                } else {
+                                    $(myMessage).addClass("bg-red-100");
+                                }
 
-                                oNow = new Date();
+                                oNow = new Date(oMessage.created_at * 1000); // This takes UTC input.
+                                $(myMessage).data('created_at', oMessage.created_at); // Store in UTC.
                                 // NOTE: This uses html() rather than text(), and is thus NOT SAFE.
                                 // We use this, so we can apply formatting. Any output that's not trusted should have been escaped by PHP.
-                                $(myMessage).addClass("bg-blue-100").find("span").html(sMessage).next("div").text(oNow.getHours() + ":" + oNow.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2}));
+                                $(myMessage).find("span").html(oMessage.content).next("div").text(oNow.getHours() + ":" + oNow.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2}));
                                 $("main").append(myMessage);
                             },
                             (2000 * iMessage)
@@ -195,7 +206,8 @@
             if ($("#conversationInput").val()) {
                 // This if() makes sure that we can call sendMessage("message") without showing the user what we sent.
                 var myMessage = $.parseHTML(sMessageBox);
-                oNow = new Date();
+                oNow = new Date(); // This is the user's message, so use now().
+                $(myMessage).data('created_at', parseInt(oNow.getTime()/1000)); // Store in UTC.
                 $(myMessage).addClass("bg-green-200 self-end").find("span").text(sMessage).next("div").text(oNow.getHours() + ":" + oNow.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2}));
                 $("main").append(myMessage);
                 $("#conversationInput").val("");
@@ -220,7 +232,7 @@
 
     $()
     {
-        sendMessage("#intro");
+        sendMessage("#init");
     }
 </SCRIPT>
 
