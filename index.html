@@ -118,15 +118,14 @@
                 }
                 if (Object.keys(data.errors).length > 0) {
                     // This failed. Either completely, or after parsing chatGPT's response.
-                    alert("Error sending message, please try again later.");
                     $("#barendTyping").addClass("hidden");
-                    $("#conversationButton").prop("disabled", false).find("svg").addClass("hidden");
+                    $("#conversationButton").find("svg").addClass("hidden");
 
                     // If the textarea is now empty, put the message back.
-                    if ($("#conversationInput").val() == "") {
+                    if ($("#conversationInput").val() == "" && sMessage != '#init') {
                         $("#conversationInput").val(sMessage);
-                        $("main").children().last().remove();
-                        $("#conversationButton").prop("disabled", false).find("svg").addClass("hidden");
+                        $("main").children().last().filter('.self-end').remove();
+                        $("#conversationButton").prop("disabled", false);
                     }
 
                     // Create a new message, make it red, add the text, add the time, append.
