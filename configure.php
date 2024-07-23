@@ -1,4 +1,5 @@
 <?php
+use \OpenAI\Responses\Assistants\AssistantListResponse;
 use \OpenAI\Responses\Models\ListResponse as ModelListResponse;
 use \OpenAI\Testing\ClientFake;
 
@@ -45,6 +46,7 @@ while (!isset($_CONFIG['api_key']) || !isset($_API) || empty($aModels)) {
                 $_API = new ClientFake(
                     [
                         ModelListResponse::fake(),
+                        AssistantListResponse::fake(),
                     ]
                 );
             } else {
@@ -93,3 +95,49 @@ while (!isset($_CONFIG['model'])) {
         @file_put_contents('settings.json', json_encode($_CONFIG, JSON_PRETTY_PRINT));
     }
 }
+
+
+
+// Retrieve the list of assistants and select one.
+while (!isset($_CONFIG['assistant'])) {
+    if (empty($aAssistants)) {
+        $aAssistants = $_API->assistants()->list()->toArray();
+        if ($aAssistants && isset($aAssistants['data'])) {
+            $aAssistants = array_filter(
+                array_map(
+                    function ($aAssistant)
+                    {
+                        return ($aAssistant['id'] ?? '');
+                    }, $aAssistants['data']
+                )
+            );
+        } else {
+            $aAssistants = [];
+        }
+
+        if (!$aAssistants) {
+            // FIXME: Create one?
+            die("Could not find any available assistants.\n");
+        }
+    }
+
+    if (count($aAssistants) == 1) {
+        $sInput = $aAssistants[0];
+        print("Selecting assistant $sInput as it's the only one available.\n");
+    } else {
+        print('Available assistants: ' . implode(', ', $aAssistants) . ".\n" .
+              'Select the assistant to use: ');
+        $sInput = trim(fgets(STDIN));
+    }
+    if ($sInput && in_array($sInput, $aAssistants)) {
+        $_CONFIG['assistant'] = $sInput;
+        @file_put_contents('settings.json', json_encode($_CONFIG, JSON_PRETTY_PRINT));
+    }
+}
+
+
+
+// Re-read file so we handle not having been able to write.
+print("Stored the following settings:\n");
+$_CONFIG = json_decode(file_get_contents('settings.json'), true);
+var_dump($_CONFIG);
