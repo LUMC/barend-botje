@@ -75,3 +75,21 @@ while (!isset($_CONFIG['api_key']) || !isset($_API) || empty($aModels)) {
         @file_put_contents('settings.json', json_encode($_CONFIG, JSON_PRETTY_PRINT));
     }
 }
+
+
+
+// Select the model from the list of available models.
+while (!isset($_CONFIG['model'])) {
+    if (count($aModels) == 1) {
+        $sInput = $aModels[0];
+        print("Selecting model $sInput as it's the only one available.\n");
+    } else {
+        print('Available models: ' . implode(', ', $aModels) . ".\n" .
+              'Select the model to use: ');
+        $sInput = trim(fgets(STDIN));
+    }
+    if ($sInput && in_array($sInput, $aModels)) {
+        $_CONFIG['model'] = $sInput;
+        @file_put_contents('settings.json', json_encode($_CONFIG, JSON_PRETTY_PRINT));
+    }
+}
