@@ -43,13 +43,22 @@
             <div class="pb-2">
                 <textarea class="w-full h-24 p-2" id="conversationInput" name="conversationInput" placeholder="Talk to me"></textarea>
             </div>
-            <button type="submit" id="conversationButton" class="px-2 py-1 bg-blue-800 disabled:opacity-25 rounded-md text-white inline-flex items-center self-end">
-                Send
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="animate-spin ml-2 h-5 w-5 text-white hidden">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-            </button>
+            <div class="flex justify-end space-x-8">
+                <button id="conversationDownloadButton" class="px-2 py-1 bg-blue-100 text-gray-600 disabled:opacity-25 rounded-md inline-flex items-center hidden">
+                    Download this conversation
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="animate-spin ml-2 h-5 w-5 hidden">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+                <button type="submit" id="conversationButton" class="px-2 py-1 bg-blue-800 disabled:opacity-25 rounded-md text-white inline-flex items-center">
+                    Send
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="animate-spin ml-2 h-5 w-5 text-white hidden">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
         </form>
     </footer>
 </div>
@@ -71,8 +80,8 @@
         }
     ).keyup();
 
-    // Set the click handler for the Send button.
-    // Disable the button when clicked, to indicate that the process is loading.
+    // Set the click handlers for the buttons.
+    // Disable the buttons when clicked, to indicate that the process is loading.
     $("#conversationButton").click(
         function ()
         {
@@ -82,6 +91,14 @@
             $("#" + this.id.replace('Button', '') + "DownloadButton").prop('disabled', true);
             $(this).parents("form").submit();
             return false; // Don't submit the form the HTML way.
+        }
+    );
+    $("#conversationDownloadButton").click(
+        function ()
+        {
+            $(this).prop('disabled', true).find("svg").removeClass("hidden");
+            downloadConversation();
+            return false; // Don't submit the form.
         }
     );
 
@@ -205,6 +222,8 @@
                         $("#barendTyping").addClass("hidden");
                         // Reset the submit button. Still disabled (there's no message), but without the loader.
                         $("#conversationButton").prop("disabled", true).find("svg").addClass("hidden");
+                        // Enable the download button.
+                        $("#conversationDownloadButton").removeClass("hidden").prop("disabled", false);
                     },
                     (nDelay * (data.data.length - 1))
                 );
@@ -238,6 +257,54 @@
         }
 
         return false;
+    }
+
+
+
+    function downloadConversation ()
+    {
+        // Download the result or results into a tab-delimited file.
+        var aMessages = $("main").children().slice(1); // Skip the intro.
+        var fileContent = '';
+
+        // Loop through the messages and convert them into tab-delimited data.
+        $.each(
+            aMessages,
+            function (index, aMessage)
+            {
+                // Collect the body first.
+                var sBody = $(aMessage).find("span").text();
+                var d = new Date($(aMessage).data("created_at") * 1000);
+                fileContent +=
+                    '[' + d.toISOString().replace(".000Z", "Z") + '] ' +
+                    ($(aMessage).filter(".self-end").length? 'You' : 'Barend') + ': ' +
+                    sBody.trim() + '\r\n';
+            }
+        );
+        // Use base64 encoding so that Firefox will also create a valid file.
+        fileContent =
+            "data:text/plain;base64," + btoa(fileContent + '\r\n');
+
+        var link = document.createElement("a");
+        link.setAttribute("href", fileContent);
+        var d = new Date();
+        // Offset the timezone.
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        link.setAttribute("download", "BarendBotje_" + d.toISOString().slice(0, 19) + ".txt");
+        document.body.appendChild(link);
+        link.click();
+
+        // Reset button, but only after a second since the download is too fast.
+        setTimeout(
+            function ()
+            {
+                $("#conversationDownloadButton").prop("disabled", false).find("svg").addClass("hidden");
+            },
+            1000
+        )
+
+        // Clean up.
+        link.remove();
     }
 
 
