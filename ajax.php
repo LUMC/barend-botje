@@ -44,6 +44,12 @@ if (empty($_POST['input'])) {
     $_POST['input'] = trim($_POST['input']);
 }
 
+if ($_POST['input'] == '#reset') {
+    // Reset.
+    unset($_SESSION['thread']);
+    die(json_encode(array_merge($a, ['messages' => ['IRELOAD' => true]])));
+}
+
 
 
 require __DIR__ . '/vendor/autoload.php';

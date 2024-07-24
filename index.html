@@ -142,6 +142,16 @@
                     return false;
                 }
 
+                // We could be asked to reload (when resetting).
+                if (typeof(data.messages.IRELOAD) != 'undefined') {
+                    location.reload(true);
+                    // This will be shown only by a fraction of a second.
+                    data.data[0] = {
+                        'role': 'assistant',
+                        'content': "<i>(reloading the page...)</i>"
+                    };
+                }
+
                 // Determine delay length - this depends on what the server tells us to do.
                 nDelay = (typeof(data.messages.INODELAY) == "undefined"? 2000 : 50);
 
