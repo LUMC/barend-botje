@@ -86,4 +86,28 @@ if (empty($_SESSION['thread'])) {
 
     $_SESSION['thread'] = $aThread['id'];
 }
+
+
+
+// Now, send the user's question over and wait for the reply.
+try {
+    // Send off the question. We could create a message and then create a run, but doing it in one go is easier.
+    // This is asynchronous; we'll get an instant reply, but the run isn't done yet.
+    $aRun = $_API->threads()->runs()->create(
+        threadId: $_SESSION['thread'],
+        parameters: [
+            'assistant_id' => $_CONFIG['assistant'],
+            'additional_messages' => [
+                [
+                    'role' => 'user',
+                    'content' => $_POST['input'],
+                ],
+            ]
+        ],
+    )->toArray();
+    $nRunID = $aRun['id'];
+
+} catch (Exception $e) {
+    die(json_encode(array_merge($a, ['errors' => ['ENEWMESSAGE' => "(Barend can't hear you at the moment.)<br>" . htmlspecialchars($e->getMessage())]])));
+}
 ?>
