@@ -2,6 +2,7 @@
 @ini_set('session.use_cookies', 1);
 @ini_set('session.use_only_cookies', 1);
 @session_start();
+$tStart = microtime(true);
 
 header('Content-Type: application/json; charset=utf-8');
 $a = [
@@ -110,4 +111,60 @@ try {
 } catch (Exception $e) {
     die(json_encode(array_merge($a, ['errors' => ['ENEWMESSAGE' => "(Barend can't hear you at the moment.)<br>" . htmlspecialchars($e->getMessage())]])));
 }
+
+
+
+// Now, we wait. We have stored the thread, so even if the user refreshes the page, nothing will be lost.
+// So, wait for ten seconds max. Then ask the user to refresh the page.
+while ((microtime(true) - $tStart) < 15) {
+    // Start with a sleep; we don't want to stress the OpenAI server out.
+    sleep(1);
+    try {
+        $aRun = $_API->threads()->runs()->retrieve(
+            threadId: $_SESSION['thread'],
+            runId: $nRunID,
+        )->toArray();
+    } catch (Exception $e) {
+        // Also, silently ignore errors.
+        break;
+    }
+
+    if ($aRun['status'] == 'completed') {
+        // Done!
+        // Retrieve the last 3 messages and check the run ID. To just take one might also work, but still.
+        try {
+            $aMessages = $_API->threads()->messages()->list(
+                $_SESSION['thread'],
+                [
+                    'limit' => 3,
+                ]
+            );
+            foreach ($aMessages['data'] as $aMessage) {
+                if ($aMessage['run_id'] != $nRunID || $aMessage['role'] != 'assistant') {
+                    continue;
+                }
+                $aContentParts = [];
+                foreach ($aMessage['content'] as $aContent) {
+                    if ($aContent['type'] == 'text') {
+                        $aContentParts[] = [
+                            'role' => $aMessage['role'],
+                            'content' => htmlspecialchars($aContent['text']['value']),
+                            'created_at' => $aMessage['created_at'],
+                        ];
+                    }
+                }
+                $a['data'] = array_merge($aContentParts, $a['data']);
+            }
+
+        } catch (Exception $e) {
+            die(json_encode(array_merge($a, ['errors' => ['EMESSAGELIST' => "It was on the tip of my tongue... but I totally forgot what I was about to say.<br>" . htmlspecialchars($e->getMessage())]])));
+        }
+        die(json_encode($a));
+    }
+}
+
+
+
+// If we get here, it didn't finish in time, or we kept getting errors.
+die(json_encode(array_merge($a, ['errors' => ['ETIMEOUT' => "It's taking too long for me to gather my thoughts... maybe you can try and refresh the page while I go and get some coffee."]])));
 ?>
