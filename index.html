@@ -115,7 +115,7 @@
             return false;
         }
         var sMessageBox =
-            '<div class="rounded-lg w-3/4 px-2 py-1">\n' +
+            '<div class="rounded-lg w-3/4 px-2 py-1 border">\n' +
             '    <span></span>\n' +
             '    <div class="float-right text-xs sm:text-sm text-gray-400 mt-1"></div>\n' +
             '</div>';
@@ -153,7 +153,7 @@
                     oNow = new Date(); // This is an error, so use now().
                     // NOTE: This uses html() rather than text(), and is thus NOT SAFE.
                     // We use this, so we can apply formatting. Any output that's not trusted should have been escaped by PHP.
-                    $(myMessage).addClass("bg-red-100").find("span").html('(' + sErrorCode + ') ' + sErrorMessage).next("div").text(oNow.getHours() + ":" + oNow.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2}));
+                    $(myMessage).addClass("bg-red-100 border-red-200").find("span").html('(' + sErrorCode + ') ' + sErrorMessage).next("div").text(oNow.getHours() + ":" + oNow.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2}));
                     $("main").append(myMessage);
 
                     return false;
@@ -195,11 +195,11 @@
                                 // Create a new message, make it blue, add the text, add the time, append.
                                 var myMessage = $.parseHTML(sMessageBox);
                                 if (oMessage.role == 'assistant') {
-                                    $(myMessage).addClass("bg-blue-100");
+                                    $(myMessage).addClass("bg-blue-100 border-blue-200");
                                 } else if (oMessage.role == 'user') {
-                                    $(myMessage).addClass("bg-green-200 self-end");
+                                    $(myMessage).addClass("bg-green-200 border-green-300 self-end");
                                 } else {
-                                    $(myMessage).addClass("bg-red-100");
+                                    $(myMessage).addClass("bg-red-100 border-red-200");
                                 }
 
                                 oNow = new Date(oMessage.created_at * 1000); // This takes UTC input.
@@ -239,7 +239,7 @@
                 var myMessage = $.parseHTML(sMessageBox);
                 oNow = new Date(); // This is the user's message, so use now().
                 $(myMessage).data('created_at', parseInt(oNow.getTime()/1000)); // Store in UTC.
-                $(myMessage).addClass("bg-green-200 self-end").find("span").text(sMessage).next("div").text(oNow.getHours() + ":" + oNow.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2}));
+                $(myMessage).addClass("bg-green-200 border-green-300 self-end").find("span").text(sMessage).next("div").text(oNow.getHours() + ":" + oNow.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2}));
                 $("main").append(myMessage);
                 $("#conversationInput").val("");
             }
