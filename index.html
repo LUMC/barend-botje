@@ -142,6 +142,9 @@
                     return false;
                 }
 
+                // Determine delay length - this depends on what the server tells us to do.
+                nDelay = (typeof(data.messages.INODELAY) == "undefined"? 2000 : 50);
+
                 // If we get here, the JSON was already parsed, and we know it was successful.
                 // We should have received a reply from the chatGPT handler.
                 if (!data.data.length) {
@@ -179,7 +182,7 @@
                                 $(myMessage).find("span").html(oMessage.content).next("div").text(oNow.getHours() + ":" + oNow.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2}));
                                 $("main").append(myMessage);
                             },
-                            (2000 * iMessage)
+                            (nDelay * iMessage)
                         );
                     }
                 );
@@ -193,7 +196,7 @@
                         // Reset the submit button. Still disabled (there's no message), but without the loader.
                         $("#conversationButton").prop("disabled", true).find("svg").addClass("hidden");
                     },
-                    (2000 * (data.data.length - 1))
+                    (nDelay * (data.data.length - 1))
                 );
 
                 return false;
@@ -220,7 +223,7 @@
                         $("#barendTyping").removeClass("hidden");
                     }
                 },
-                1000
+                500
             );
         }
 

@@ -58,9 +58,48 @@ try {
 
 
 if ($_POST['input'] == '#init') {
-    // Init.
-    sleep(2);
-    die(json_encode(array_merge($a, ['data' => $aInitMessages])));
+    // Init. Check if we already have a thread.
+    if (empty($_SESSION['thread'])) {
+        // Nope, we're all new. Just send the initial messages. We'll create a thread only when the user sends something.
+        sleep(2);
+        die(json_encode(array_merge($a, ['data' => $aInitMessages])));
+    }
+
+    // We have a thread already. Retrieve the last 25 messages.
+    try {
+        $aMessages = $_API->threads()->messages()->list(
+            $_SESSION['thread'],
+            [
+                'limit' => 25,
+            ]
+        );
+        foreach ($aMessages['data'] as $aMessage) {
+            $aContentParts = [];
+            foreach ($aMessage['content'] as $aContent) {
+                if ($aContent['type'] == 'text') {
+                    $aContentParts[] = [
+                        'role' => $aMessage['role'],
+                        'content' => htmlspecialchars($aContent['text']['value']),
+                        'created_at' => $aMessage['created_at'],
+                    ];
+                }
+            }
+            $a['data'] = array_merge($aContentParts, $a['data']);
+        }
+
+    } catch (Exception $e) {
+        die(json_encode(array_merge($a, ['errors' => ['EMESSAGELIST' => "I remember seeing you before, but I can't recall what we discussed.<br>" . htmlspecialchars($e->getMessage())]])));
+    }
+
+    // We must have some kind of delay, otherwise, we don't get to see the "Barend is typing".
+    $tDiff = (microtime(true) - $tStart);
+    if ($tDiff < 1) {
+        usleep((int) ((1 - $tDiff) * 1000000));
+    }
+
+    // Now tell the interface to not be slow about this.
+    $a['messages']['INODELAY'] = true;
+    die(json_encode($a));
 }
 
 
