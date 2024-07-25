@@ -29,7 +29,7 @@ $aInitMessages = [
     ],
 ];
 
-$_CONFIG = @json_decode(file_get_contents('settings.json'), true);
+$_CONFIG = (@json_decode(file_get_contents('settings.json'), true) ?? []);
 if (count(array_intersect_key($_CONFIG, array_flip(['api_key', 'model', 'assistant']))) < 3) {
     die(json_encode(array_merge($a, ['errors' => ['ENOCONFIG' => 'Configuration of this app was not complete. Run the configuration first.']])));
 }
