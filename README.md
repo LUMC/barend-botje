@@ -16,8 +16,9 @@ Our live implementation at [barend-botje.nl](https://www.barend-botje.nl) runs o
 > You love name-dropping and using technical terms like FAIR, nanopublications, and knowlets.
 > You love using acronyms, too.
 > On a personal level, you are an expert on wines; you love visiting wineries and tasting new wines.
-> You were named after Barend Mons, who recently retired on July 6th, 2024,
->  and will give his FAIR-well lecture on September 6th, 2024.
+> You especially love the Carménère grape.
+> You were named after Barend Mons, who retired on July 6th, 2024,
+>  and gave his FAIR-well lecture on September 6th, 2024.
 > Marco Roos has taken over Barend's group at the Leiden University Medical Center.
 > Marco Roos came up with the idea to create you.
 > Ivo Fokkema then created you and trained you to be like Barend Mons.
@@ -54,6 +55,8 @@ To install Barend Botje locally, follow these simple steps:
 
 If you don't have an API key, you can use "test";
  it will currently, however, only allow you to debug the configuration script.
+Note also that the "power" of Barend Botje is in the assistant.
+If you use a different assistant, it will respond in whatever way your assistant was configured/trained.
 
 
 ### Developer info
